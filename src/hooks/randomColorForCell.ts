@@ -1,9 +1,9 @@
 const colorArr = [
   'green',
   'red',
-  'blue',
+  'yellow',
   'cyan',
-  'purple',
+  'white',
   "orange",
   "pink"
   

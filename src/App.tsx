@@ -6,6 +6,8 @@ import Cell from "./components/Cell";
 import randomColorForCell from "./hooks/randomColorForCell";
 import neighborScore from "./hooks/neighborScore";
 
+import imageBg from "./assets/img/bg.jpg";
+
 interface AppState {
   days?: number;
   chanceOfLive?: number;
@@ -14,6 +16,7 @@ interface AppState {
   world?: string[];
   timer?: NodeJS.Timeout | number;
   isRuningGame?: boolean;
+  cellSize?: number | undefined;
 }
 
 const initGameSetting = {
@@ -36,10 +39,33 @@ const App: React.FC<AppState> = () => {
   const [isRuningGame, setIsRunningGame] = useState(false);
 
   const timerInteval = useRef<NodeJS.Timeout | null | undefined>(undefined);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [cellSize, setCellSizer] = useState(20);
 
   useEffect(() => {
-    setWorld(renderGrid(sideLength, chanceOfLive));
-  }, [sideLength, chanceOfLive, speed]);
+    if (chanceOfLive === 0) {
+      const oldWorl = [...world];
+
+      const tempWorld = renderGrid(sideLength, 0);
+
+      let newWorld = tempWorld.map((row: number[], rowIndex: number) => {
+        let oldRow = oldWorl[rowIndex];
+
+        row.map((col, colIndex) => {
+          let oldCol = oldRow ? oldRow[colIndex] : 0;
+
+          if (col !== oldCol && oldCol) {
+            return (tempWorld[rowIndex][colIndex] = oldCol);
+          } else return col;
+        });
+        return row;
+      });
+
+      setWorld(newWorld);
+    } else {
+      setWorld(renderGrid(sideLength, chanceOfLive));
+    }
+  }, [sideLength, chanceOfLive]);
 
   const handleStart = () => {
     if (timerInteval.current) return;
@@ -104,20 +130,31 @@ const App: React.FC<AppState> = () => {
     setIsRunningGame(false);
   }
 
+  useEffect(() => {
+    const tableBounding = tableRef.current?.getBoundingClientRect();
+    if (tableBounding) {
+      let tableHeight = window.innerHeight - 50 - tableBounding.top;
+      setCellSizer(tableHeight / sideLength);
+    }
+  }, [sideLength]);
+
   return (
     <div className="App mb-5">
-      <div className="container">
+      <Image src={imageBg}></Image>
+
+      <div className="container-fluid">
         <div className="row mt-4">
-          <div className="col col-11">
+          <div className="col col-10">
             <h1>Game of life</h1>
             <TableGame>
-              <tbody>
+              <TableBody ref={tableRef}>
                 {world?.map((row: [], rowIndex: number) => {
                   return (
                     <tr key={rowIndex}>
                       {row?.map((cellValue: number, cellIndex: number) => {
                         return (
                           <Cell
+                            cellSize={cellSize}
                             key={cellIndex}
                             cellValue={cellValue}
                             cellIndex={cellIndex}
@@ -131,12 +168,13 @@ const App: React.FC<AppState> = () => {
                     </tr>
                   );
                 })}
-              </tbody>
+              </TableBody>
             </TableGame>
           </div>
 
           {/* Control game */}
-          <div className="col col-1">
+          <div className="col col-2 pe-5">
+            <h3 className="text-start mt-5">Game setting</h3>
             <Control>
               <div className="day-life">
                 Days: <strong>{days}</strong>
@@ -166,7 +204,7 @@ const App: React.FC<AppState> = () => {
                 <input
                   type="range"
                   min={10}
-                  max={3000}
+                  max={1000}
                   step={100}
                   value={speed}
                   onChange={(e) => setSpeed(Number.parseInt(e.target.value))}
@@ -189,7 +227,7 @@ const App: React.FC<AppState> = () => {
                 />
               </ControlElement>
 
-              <ControlButtonGroup>
+              <ControlButtonGroup className="d-flex flex-column mt-4">
                 <ControlButton onClick={handleStart}>
                   <i className="fa-solid fa-play"></i> Start
                 </ControlButton>
@@ -206,6 +244,22 @@ const App: React.FC<AppState> = () => {
   );
 };
 
+const Image = styled.img`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100vh;
+
+  object-fit: cover;
+  onject-position: center;
+
+  filter: blur(5px);
+`;
+
 const Control = styled.div`
   text-align: left;
   margin-bottom: 100px;
@@ -213,6 +267,8 @@ const Control = styled.div`
 
 const ControlElement = styled.div`
   margin-top: 10px;
+  display: flex;
+  flex-direction: column;
 `;
 
 const TableGame = styled.table`
@@ -220,13 +276,26 @@ const TableGame = styled.table`
   justify-content: center;
 `;
 
-const ControlButtonGroup = styled.div``;
+const TableBody = styled.tbody`
+  background: rgba(0,0,0,0.3);
+  box-shadow: 1px 1px 10px white;
+  height: 100%
+}`;
+
+const ControlButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  margin-top: 10px;
+`;
+
 const ControlButton = styled.button`
   border: none;
   border-radius: 5px;
   margin-top: 10px;
   padding: 2px 20px;
-  min-width: 100px;
+  min-wi
+  dth: 100px;
 `;
 
 export default App;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { MutableRefObject } from "react";
 import styled from "styled-components";
 
 interface CellProps {
@@ -8,6 +8,7 @@ interface CellProps {
   colorCell: string;
   world: number[][];
   setWorld: (world: number[][]) => void;
+  cellSize: number | undefined;
 }
 
 const Cell: React.FC<CellProps> = ({
@@ -17,6 +18,7 @@ const Cell: React.FC<CellProps> = ({
   colorCell,
   world,
   setWorld,
+  cellSize,
 }) => {
   function handleToggleCell(value: number) {
     let tempWorld: number[][] = [...world];
@@ -28,6 +30,7 @@ const Cell: React.FC<CellProps> = ({
     <CellTd
       colorCell={cellValue === 1 ? colorCell : ""}
       onClick={() => handleToggleCell(cellValue)}
+      cellSize={cellSize}
     ></CellTd>
   );
 };
@@ -36,8 +39,8 @@ export default Cell;
 
 const CellTd = styled.td`
   border: 1px solid #888;
-  width: 20px;
-  height: 20px;
+  width: ${(props: any) => props.cellSize + "px"};
+  height: ${(props: any) => props.cellSize + "px"};
 
   background-color: ${(props: any) => props.colorCell};
 `;
