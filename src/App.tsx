@@ -120,7 +120,7 @@ const App: React.FC<AppState> = () => {
 
   function handleResetGame() {
     setDays(0);
-    setSpeed(0);
+    setSpeed(500);
     setSideLength(10);
     setChanceOfLive(0);
 
@@ -147,7 +147,7 @@ const App: React.FC<AppState> = () => {
           <div className="col col-10">
             <h1>Game of life</h1>
             <TableGame>
-              <TableBody ref={tableRef}>
+              <TableBody ref={tableRef} className="table-board">
                 {world?.map((row: [], rowIndex: number) => {
                   return (
                     <tr key={rowIndex}>

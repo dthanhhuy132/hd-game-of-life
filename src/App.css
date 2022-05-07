@@ -28,3 +28,8 @@ html::-webkit-scrollbar-thumb:hover {
   background: #cac7c7;
   margin-right: -30px;
 }
+
+.table-board {
+  box-shadow: 1px 1px 10px white;
+  background-color: rgba(0, 0, 0, 0.5);
+}
