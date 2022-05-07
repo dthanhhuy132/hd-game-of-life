@@ -13,67 +13,74 @@ interface AppState {
   sideLength?: number;
   world?: string[];
   timer?: NodeJS.Timeout | number;
+  isRuningGame?: boolean;
 }
 
+const initGameSetting = {
+  days: 0,
+  chanceOfLive: 0,
+  speed: 500,
+  sideLength: 10,
+};
+
 const App: React.FC<AppState> = () => {
-  const [days, setDays] = useState(0);
-  const [chanceOfLive, setChanceOfLive] = useState(50);
-  const [speed, setSpeed] = useState(700);
-  const [sideLength, setSideLength] = useState(5);
+  const [days, setDays] = useState(initGameSetting.days);
+  const [chanceOfLive, setChanceOfLive] = useState(
+    initGameSetting.chanceOfLive
+  );
+  const [speed, setSpeed] = useState(initGameSetting.speed);
+  const [sideLength, setSideLength] = useState(initGameSetting.sideLength);
   const [world, setWorld] = useState(renderGrid(sideLength, chanceOfLive));
   const [colorCell, setColorCell] = useState(randomColorForCell());
 
-  const timerInteval = useRef<NodeJS.Timeout | null | undefined>(null);
-  const timerTimeout = useRef<NodeJS.Timeout | null | undefined>(null);
+  const [isRuningGame, setIsRunningGame] = useState(false);
+
+  const timerInteval = useRef<NodeJS.Timeout | null | undefined>(undefined);
 
   useEffect(() => {
     setWorld(renderGrid(sideLength, chanceOfLive));
-  }, [sideLength, chanceOfLive]);
+  }, [sideLength, chanceOfLive, speed]);
 
   const handleStart = () => {
     if (timerInteval.current) return;
-    timerInteval.current = setInterval(checkGame, speed);
+    setIsRunningGame(!isRuningGame);
+  };
+
+  const handleStop = () => {
+    if (timerInteval.current) {
+      clearInterval(timerInteval.current);
+
+      timerInteval.current = undefined;
+    } else return;
   };
 
   useEffect(() => {
-    if (timerInteval) {
+    timerInteval.current = setInterval(checkGame, speed);
+    // eslint-disable-next-line
+  }, [isRuningGame]);
+
+  useEffect(() => {
+    if (timerInteval.current) {
       handleStop();
-      timerTimeout.current = setTimeout(() => {
+      setTimeout(() => {
         handleStart();
       }, 0);
     }
-
-    return () => {
-      if (timerTimeout.current) clearTimeout(timerTimeout.current);
-    };
-  }, [timerInteval.current, timerInteval]);
-
-  const handleStop = () => {
-    if (timerInteval.current && timerTimeout.current) {
-      console.log("run stop");
-      clearInterval(timerInteval.current);
-      clearTimeout(timerTimeout.current);
-      timerInteval.current = null;
-      timerTimeout.current = null;
-    } else return;
-  };
+    // eslint-disable-next-line
+  }, [timerInteval.current]);
 
   const checkGame = () => {
     const newWorld = world.map((row: number[], rowIndex: number) => {
       let newRow = row.map((cell, cellIndex) => {
         const score = neighborScore(world, rowIndex, cellIndex);
         let status = 0;
-
         if (cell === 1 && (score === 2 || score === 3)) {
           status = 1;
-        }
-
-        if (cell === 0 && score === 3) {
+        } else if (cell === 0 && score === 3) {
           status = 1;
         }
         return status;
       });
-
       return newRow;
     });
 
@@ -84,6 +91,18 @@ const App: React.FC<AppState> = () => {
       setDays((pre) => pre + 1);
     }
   };
+
+  function handleResetGame() {
+    setDays(0);
+    setSpeed(0);
+    setSideLength(10);
+    setChanceOfLive(0);
+
+    setWorld(renderGrid(sideLength, chanceOfLive));
+    setColorCell(randomColorForCell());
+
+    setIsRunningGame(false);
+  }
 
   return (
     <div className="App mb-5">
@@ -174,10 +193,8 @@ const App: React.FC<AppState> = () => {
                 <ControlButton onClick={handleStart}>
                   <i className="fa-solid fa-play"></i> Start
                 </ControlButton>
-                <ControlButton onClick={handleStop}>
-                  <i className="fa-solid fa-stop"></i> Stop
-                </ControlButton>
-                <ControlButton>
+
+                <ControlButton onClick={handleResetGame}>
                   <i className="fa-solid fa-rotate"></i> Reset
                 </ControlButton>
               </ControlButtonGroup>
