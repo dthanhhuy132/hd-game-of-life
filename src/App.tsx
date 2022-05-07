@@ -257,7 +257,8 @@ const Image = styled.img`
   object-fit: cover;
   onject-position: center;
 
-  filter: blur(5px);
+  filter: blur(100px);
+  filter: brightness(0.6);
 `;
 
 const Control = styled.div`
