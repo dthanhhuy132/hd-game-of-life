@@ -31,5 +31,5 @@ html::-webkit-scrollbar-thumb:hover {
 
 .table-board {
   box-shadow: 1px 1px 10px white;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.6);
 }
